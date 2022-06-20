@@ -2,20 +2,12 @@
 job_complete_timeout: 60
 show_cursor: False
 
-[printer Voron]
+[printer V2-2566]
 moonraker_host: 127.0.0.1
 moonraker_port: 7125
 moonraker_api_key: False
 
-[printer Ender 3 Max]
-moonraker_host: 127.0.0.1
-moonraker_port: 7126
-moonraker_api_key: False
 
-[printer SP5]
-moonraker_host: 10.0.0.9
-moonraker_port: 7125
-moonraker_api_key: False
 
 [preheat ABS]
 bed: 105
@@ -315,8 +307,7 @@ panel: settings
 
 #~#
 #~# [main]
-#~# font_size = small
-#~# confirm_estop = True
-#~# move_speed_xy = 151
 #~# print_sort_dir = date_desc
+#~# theme = v2-material
+#~# confirm_estop = True
 #~#
