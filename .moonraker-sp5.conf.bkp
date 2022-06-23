@@ -1,8 +1,8 @@
 [server]
-host = 0.0.0.0
+host = 127.0.0.1
 port = 7125
 enable_debug_logging = False
-klippy_uds_address = /tmp/klippy_uds
+klippy_uds_address = /tmp/klippy_uds-sp5
 
 [database]
 database_path = /home/lee/.moonraker_database
