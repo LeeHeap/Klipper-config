@@ -1,0 +1,71 @@
+[server]
+host = 0.0.0.0
+port = 7125
+enable_debug_logging = False
+klippy_uds_address = /tmp/klippy_uds
+
+[database]
+database_path = /home/lee/.moonraker_database
+
+[authorization]
+trusted_clients = 
+	10.0.0.0/16
+	10.0.0.0/8
+	127.0.0.0/8
+	169.254.0.0/16
+	172.16.0.0/12
+	192.168.0.0/16
+	FE80::/10
+	::1/128
+cors_domains = 
+	http://*.lan
+	http://*.local
+	http://*://my.mainsail.xyz
+	http://*://app.fluidd.xyz
+
+[file_manager]
+config_path = /home/lee/klipper_config
+log_path = /home/lee/klipper_logs
+
+[octoprint_compat]
+
+[power printer]
+type = homeassistant
+address = home.lheap.co.uk
+protocol = https
+port = 8123
+device = switch.sp5_plug_power
+domain = switch
+token = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIyNWE2NTE5NmVmYTQ0M2U1YTY1OTNkMTAzODJmZTA2YiIsImlhdCI6MTY0OTc3NzgwNSwiZXhwIjoxOTY1MTM3ODA1fQ.-p9DeBTKqSGKGg7u4goypvhMzOjxR3mp5UmOOy6CrKM
+off_when_shutdown = True
+off_when_shutdown_delay = 30
+on_when_job_queued = True
+locked_while_printing = False
+restart_klipper_when_powered = True
+restart_delay = 1
+
+[power office_light]
+type = homeassistant
+address = home.lheap.co.uk
+protocol = https
+port = 8123
+device = light.office
+domain = light
+token = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIyNWE2NTE5NmVmYTQ0M2U1YTY1OTNkMTAzODJmZTA2YiIsImlhdCI6MTY0OTc3NzgwNSwiZXhwIjoxOTY1MTM3ODA1fQ.-p9DeBTKqSGKGg7u4goypvhMzOjxR3mp5UmOOy6CrKM
+
+[history]
+
+[update_manager]
+channel = dev
+refresh_interval = 168
+
+[update_manager fluidd]
+type = web
+repo = fluidd-core/fluidd
+path = ~/fluidd
+
+[update_manager webcamd]
+type = git_repo
+path = ~/crowsnest
+origin = https://github.com/mainsail-crew/crowsnest.git
+
