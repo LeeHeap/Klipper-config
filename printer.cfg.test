@@ -5,13 +5,9 @@
 
 
 [mcu]
-#serial: /dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.4:1.0
-canbus_uuid: 102ae6efb1e0
-#restart_method: command
-
-[mcu ebbcan]
-canbus_uuid: #
-
+serial: /dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.4:1.0#/dev/serial/by-id/usb-Klipper_stm32f446xx_5E0033000A51373330333137-if00
+restart_method: command
+#canbus_uuid: 102ae6efb1e0
 
 [printer]
 kinematics: corexy
@@ -35,7 +31,7 @@ enable_pin: !PF14
 rotation_distance: 40
 microsteps: 32
 full_steps_per_rotation:400
-endstop_pin: ebbcan:PB6#PG6
+endstop_pin: PG6
 position_min: 0
 position_endstop: 350
 position_max: 350
@@ -164,20 +160,20 @@ stealthchop_threshold: 0#999999
 ##  Heater - HE0
 ##  Thermistor - T0
 [extruder]
-step_pin: ebbcan:PD0
-dir_pin: !ebbcan:PD1
-enable_pin: !ebbcan:PD2
+step_pin: PE2
+dir_pin: !PE3
+enable_pin: !PD4
 rotation_distance: 22.6789511
 gear_ratio: 50:10 #50:10 = Clockwork2
 microsteps: 32
 full_steps_per_rotation: 200
 nozzle_diameter: 0.400
 filament_diameter: 1.75
-heater_pin: ebbcan:PB13
+heater_pin: PA2
 sensor_type: Generic 3950#ATC Semitec 104GT-2
-sensor_pin: ebbcan:PA3
-min_temp: 10
-max_temp: 270
+sensor_pin: PF4
+min_temp: -200
+max_temp: 2000
 max_power: 1.0
 min_extrude_temp: 170
 pressure_advance: 0.06
@@ -193,7 +189,7 @@ pressure_advance: 0.06
 ##  E0 on MOTOR6
 ##  Make sure to update below for your relevant driver (2208 or 2209)
 [tmc2209 extruder]
-uart_pin: ebbcan:PB15
+uart_pin: PE1
 interpolate: false
 run_current: 0.5
 sense_resistor: 0.110
@@ -221,7 +217,7 @@ max_temp: 120
 #####################################################################
 
 [probe]
-pin: ^ebbcan:PB8 #~PG15
+pin: ~PG15
 x_offset: 0
 y_offset: 19.75
 z_offset: 6.42
@@ -238,13 +234,13 @@ samples_tolerance_retries: 3
 
 [fan]
 ##  Print Cooling Fan - FAN0
-pin: ebbcan:PA0
+pin: PA8
 kick_start_time: 0.5
 off_below: 0.10
 
 [heater_fan hotend_fan]
 ##  Hotend Fan - FAN1
-pin: ebbcan:PA1
+pin: PE5
 max_power: 1.0
 kick_start_time: 0.5
 heater: extruder
@@ -302,11 +298,11 @@ probe_points: 175, 175, 20
 #ADXL on MCU
 
 [adxl345]
-cs_pin: ebbcan:PB12
-spi_software_sclk_pin: ebbcan:PB10
-spi_software_mosi_pin: ebbcan:PB11
-spi_software_miso_pin: ebbcan:PB2
-axes_map: x,y,z
+cs_pin: PA15
+spi_software_sclk_pin: PB3
+spi_software_mosi_pin: PB5
+spi_software_miso_pin: PB4
+#axes_map: x,y,z
 
 [input_shaper]
 shaper_type_x: mzv
