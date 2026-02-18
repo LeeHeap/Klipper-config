@@ -1,65 +1,60 @@
 #!/usr/bin/env bash
 
 #####################################################################
-### Please set the paths accordingly. In case you don't have all  ###
-### the listed folders, just keep that line commented out.        ###
+### GitHub config backup for Voron printer
 #####################################################################
-### Path to your config folder you want to back up
+
 config_folder=~/printer_data/config
-
-### Path to your Klipper folder, by default that is '~/klipper'
 klipper_folder=~/klipper
-
-### Path to your Moonraker folder, by default that is '~/moonraker'
 moonraker_folder=~/moonraker
-
-### Path to your Mainsail folder, by default that is '~/mainsail'
-mainsail_folder=~/mainsail
-
-### Path to your Fluidd folder, by default that is '~/fluidd'
 fluidd_folder=~/fluidd
 
 #####################################################################
-#####################################################################
 
+set -e  # Exit on any error
 
-#####################################################################
-################ !!! DO NOT EDIT BELOW THIS LINE !!! ################
-#####################################################################
 grab_version() {
-  local klipper_commit moonraker_commit
-  local mainsail_ver fluidd_ver
+  local versions=""
 
-  if [[ -n ${klipper_folder} ]]; then
+  if [[ -d "${klipper_folder}" ]]; then
     cd "${klipper_folder}"
-    klipper_commit=$(git rev-parse --short=7 HEAD)
-    m1="Klipper on commit: ${klipper_commit}"
+    versions+="Klipper: $(git describe --always --tags 2>/dev/null || git rev-parse --short=7 HEAD)"
   fi
-  if [[ -n ${moonraker_folder} ]]; then
+
+  if [[ -d "${moonraker_folder}" ]]; then
     cd "${moonraker_folder}"
-    moonraker_commit=$(git rev-parse --short=7 HEAD)
-    m2="Moonraker on commit: ${moonraker_commit}"
+    versions+=" | Moonraker: $(git describe --always --tags 2>/dev/null || git rev-parse --short=7 HEAD)"
   fi
-  if [[ -n ${mainsail_folder} ]]; then
-    mainsail_ver=$(head -n 1 "${mainsail_folder}/.version")
-    m3="Mainsail version: ${mainsail_ver}"
+
+  if [[ -f "${fluidd_folder}/.version" ]]; then
+    versions+=" | Fluidd: $(head -n 1 "${fluidd_folder}/.version")"
   fi
-  if [[ -n ${fluidd_folder} ]]; then
-    fluidd_ver=$(head -n 1 "${fluidd_folder}/.version")
-    m4="Fluidd version: ${fluidd_ver}"
-  fi
+
+  echo "${versions}"
 }
 
 push_config() {
-  local current_date
-  
-  cd "${config_folder}" || exit 1
-  git pull
-  git add .
-  current_date=$(date +"%Y-%m-%d %T")
-  git commit -m "Autocommit from ${current_date}" -m "${m1}" -m "${m2}" -m "${m3}" -m "${m4}"
-  git push
+  cd "${config_folder}" || { echo "ERROR: Config folder not found"; exit 1; }
+
+  # Only pull if remote has changes (avoids unnecessary merge commits)
+  git fetch origin 2>/dev/null
+  local LOCAL=$(git rev-parse HEAD)
+  local REMOTE=$(git rev-parse @{u} 2>/dev/null || echo "${LOCAL}")
+  if [[ "${LOCAL}" != "${REMOTE}" ]]; then
+    git pull --rebase --autostash || { echo "ERROR: git pull failed"; exit 1; }
+  fi
+
+  # Check if there are actually changes to commit
+  if git diff --quiet && git diff --staged --quiet; then
+    echo "No config changes to backup"
+    exit 0
+  fi
+
+  git add -A
+  local version_info
+  version_info=$(grab_version)
+  git commit -m "Autocommit $(date +'%Y-%m-%d %H:%M')" -m "${version_info}"
+  git push || echo "WARNING: git push failed — will retry next run"
 }
 
-grab_version
 push_config
