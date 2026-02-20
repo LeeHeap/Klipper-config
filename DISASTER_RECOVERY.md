@@ -614,7 +614,20 @@ The default `TRSYNC_TIMEOUT` is `0.025` seconds. This system has it modified to 
 TRSYNC_TIMEOUT = 0.05   # Default is 0.025
 ```
 
-> **⚠️ This is a source code modification.** It will be **overwritten** every time Klipper is updated via `git pull` or Moonraker's update manager. You MUST re-apply this change after every Klipper update. This is a well-known community workaround that has not been merged upstream.
+> **⚠️ This is a source code modification.** It will be **overwritten** every time Klipper is updated via `git pull` or Moonraker's update manager. This is a well-known community workaround that has not been merged upstream.
+
+**Automated fix:** A systemd drop-in ensures this patch is re-applied automatically on every Klipper start (including after updates):
+
+```
+/etc/systemd/system/klipper.service.d/fix-trsync.conf
+```
+
+```ini
+[Service]
+ExecStartPre=/bin/sed -i 's/TRSYNC_TIMEOUT = 0.025/TRSYNC_TIMEOUT = 0.05/' /home/<USER>/klipper/klippy/mcu.py
+```
+
+After a fresh OS install, recreate this drop-in (see Phase 7 below), then run `sudo systemctl daemon-reload`.
 
 ### ⚠️ Octopus 12 MHz Crystal
 
@@ -741,13 +754,22 @@ git clone https://github.com/mainsail-crew/moonraker-timelapse.git
 
 #### Phase 7: Apply TRSYNC_TIMEOUT Fix
 
+Apply the one-time fix and create the systemd drop-in so it survives all future Klipper updates automatically:
+
 ```bash
-# Edit ~/klipper/klippy/mcu.py
-# Change line ~256 from:
-#   TRSYNC_TIMEOUT = 0.025
-# To:
-#   TRSYNC_TIMEOUT = 0.05
+# Apply the fix now
 sed -i 's/TRSYNC_TIMEOUT = 0.025/TRSYNC_TIMEOUT = 0.05/' ~/klipper/klippy/mcu.py
+
+# Create systemd drop-in to auto-patch on every Klipper start
+sudo mkdir -p /etc/systemd/system/klipper.service.d
+sudo tee /etc/systemd/system/klipper.service.d/fix-trsync.conf << 'EOF'
+[Service]
+# CAN bus fix: patch TRSYNC_TIMEOUT from 0.025 to 0.05 before Klipper starts.
+# Required for reliable CAN communication with EBB36.
+# This survives Klipper updates which overwrite mcu.py.
+ExecStartPre=/bin/sed -i 's/TRSYNC_TIMEOUT = 0.025/TRSYNC_TIMEOUT = 0.05/' /home/<USER>/klipper/klippy/mcu.py
+EOF
+sudo systemctl daemon-reload
 ```
 
 #### Phase 8: Build & Flash MCU Firmware
