@@ -327,7 +327,7 @@ printer_data/config/
     ├── smarthome.cfg        # HOME_IF_NEEDED conditional homing
     ├── speed_test.cfg       # Fast diagonal speed test macro
     ├── stealthburner_leds.cfg # SB LED status macros (GRBW Neopixels)
-    ├── wled_lights.cfg      # WLED case light control via Moonraker
+    ├── wled_lights.cfg      # WLED preset switching, auto-transitions, test macros
     └── scripts/
         └── c920_disable_autofocus.sh  # v4l2-ctl autofocus disable script
 ```
@@ -552,7 +552,7 @@ The `PRINT_END` macro calls `TIMELAPSE_TAKE_FRAME` as its final action. Timelaps
 
 ## 13. WLED Case Lighting
 
-An external WLED controller manages case lighting:
+An external WLED controller manages case lighting with 8 presets tied to printer states:
 
 | Setting | Value |
 |---|---|
@@ -560,9 +560,33 @@ An external WLED controller manages case lighting:
 | Protocol | HTTP |
 | LED Count | 104 |
 | Moonraker Section | `[wled lights]` |
-| Default Preset | 1 (on startup) |
 
-Controlled via `CASELIGHTS_ON` / `CASELIGHTS_OFF` gcode macros which call Moonraker's `set_wled_state` remote method. The `[power printer_lights]` section in Moonraker exposes this as a power device in the Fluidd UI.
+### Preset Map
+
+| Preset | State | Effect |
+|--------|-------|--------|
+| 1 | Idle / Standby | Solid warm white 30% |
+| 2 | Heating | Breathe deep orange |
+| 3 | Printing | Solid neutral white 85% |
+| 4 | Homing / QGL / Meshing | Scan blue |
+| 5 | Cleaning nozzle | Chase cyan |
+| 6 | Print complete | Breathe green |
+| 7 | Error / Cancelled | Breathe red |
+| 8 | Paused / Filament change | Blink amber |
+
+### Auto-transitions
+
+- **Print complete**: Green (preset 6) for 15 min → idle warm white (preset 1) for 30 min → off
+- **Cancelled**: Red (preset 7) for 15 min → idle → off (same timer chain)
+- Any new state change cancels pending timers
+
+### Integration
+
+Presets are called from the `STATUS_*` macros in `stealthburner_leds.cfg` via `_SET_CASE_LEDS PRESET=N` (defined in `wled_lights.cfg`). The `PRINT_END`, `CANCEL_PRINT`, `PAUSE`, and `RESUME` macros also set appropriate presets directly.
+
+Manual control via `CASELIGHTS_ON` / `CASELIGHTS_OFF` macros and KlipperScreen menu is preserved. The `[power printer_lights]` section in Moonraker exposes this as a power device in the Fluidd UI.
+
+Test macros (`TEST_WLED_IDLE`, `TEST_WLED_HEATING`, etc.) are available in Fluidd for previewing each preset.
 
 ---
 
