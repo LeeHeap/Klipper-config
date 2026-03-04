@@ -1,6 +1,16 @@
 # Voron 2.4 350mm — Klipper Configuration
 
-Automated backup of the Klipper printer configuration for a Voron 2.4 350mm CoreXY printer.
+Automated backup of the Klipper printer configuration for a Voron 2.4 350mm CoreXY 3D printer.
+
+---
+
+## About This Printer
+
+The [Voron 2.4](https://vorondesign.com/voron2.4) is a fully enclosed, high-performance CoreXY 3D printer designed by the Voron Design community for self-sourcing and self-assembly. The 350mm variant has a 350×350×340mm build volume. It uses a fixed bed with a flying gantry levelled via four independent Z motors (Quad Gantry Level), and is optimised for printing engineering materials such as ABS and ASA at elevated chamber temperatures.
+
+This specific build is **serial number V2.3902**, built and maintained by Lee. It has been significantly modified from the stock build — see [Hardware Mods](#hardware-mods) below.
+
+---
 
 ## Hardware
 
@@ -8,24 +18,29 @@ Automated backup of the Klipper printer configuration for a Voron 2.4 350mm Core
 |---|---|
 | Host | Raspberry Pi 4B (4 GB) |
 | Mainboard | BTT Octopus (STM32F446) via USB |
-| Toolhead | BTT EBB36 (STM32G0B1) via CAN bus at 1 Mbps |
-| Extruder | Clockwork 2 (50:10) |
-| Probe | Voron Tap (nozzle contact) |
+| Toolhead Board | BTT EBB36 (STM32G0B1) via CAN bus at 1 Mbps |
+| Extruder | Clockwork 2 (50:10 gear ratio) |
+| Probe | Voron TAP (nozzle contact) |
 | Accelerometer | ADXL345 on EBB36 |
-| Camera | Logitech C920 Pro HD |
-| LEDs | StealthBurner RGBW Neopixels + WLED case lights (104 LEDs) |
+| Touchscreen | 4.3" Waveshare DSI LCD (KlipperScreen) |
+
+---
 
 ## Software Stack
 
 | Component | Purpose |
 |---|---|
-| **Klipper** | Firmware host |
-| **Moonraker** | API server |
+| **Klipper** | Printer firmware host — runs on the Pi, controls all MCUs |
+| **Moonraker** | REST API server — bridges Klipper to web interfaces and integrations |
 | **Fluidd** | Web UI (port 80 via Nginx) |
-| **KlipperScreen** | Touchscreen interface |
+| **KlipperScreen** | Touchscreen interface on the 4.3" DSI display |
 | **Crowsnest** | Webcam streaming (camera-streamer + WebRTC) |
-| **Moonraker-Timelapse** | Print timelapse generation |
-| **Katapult** | CAN bootloader on EBB36 |
+| **Moonraker-Timelapse** | Per-print timelapse generation |
+| **Katapult** | CAN bootloader on EBB36 for over-the-wire firmware flashing |
+| **WLED** | LED controller firmware on internal ESP8266 — 8-preset status lighting |
+| **Claude (Anthropic)** | AI print monitoring — analyses webcam feed for failures, anomalies, and print quality in a dedicated LXC container on the Proxmox host |
+
+---
 
 ## Repository Structure
 
@@ -53,35 +68,67 @@ Automated backup of the Klipper printer configuration for a Voron 2.4 350mm Core
     ├── nozzle_scrub.cfg        # Purge bucket & brush macro (350mm)
     ├── print_start.cfg         # Full start sequence
     ├── smarthome.cfg           # HOME_IF_NEEDED conditional homing
-    ├── speed_test.cfg           # Diagonal speed test
+    ├── speed_test.cfg          # Diagonal speed test
     ├── stealthburner_leds.cfg  # SB LED status macros
     └── wled_lights.cfg         # WLED case light control
 ```
 
-## Print Start Sequence
+---
 
-1. Enable filament sensor → heat bed, hold extruder at 150°C (Tap-safe)
-2. Conditional home → move to centre at Z50 → wait for bed temp
-3. Quad Gantry Level (if not already applied) → re-home Z
-4. Adaptive bed mesh
-5. Heat extruder to target → begin printing
+## Hardware Mods
+
+### Toolhead & Motion
+
+| Mod | Description |
+|---|---|
+| [Voron TAP](https://github.com/VoronDesign/Voron-Tap) | Nozzle-contact probing — the nozzle itself is the probe, eliminating Z offset drift |
+| [Stealthburner](https://github.com/VoronDesign/Voron-Stealthburner) | Replacement printhead with integrated RGBW LED status lighting and improved part cooling |
+| [Clockwork 2](https://github.com/VoronDesign/Voron-Stealthburner) | Direct-drive extruder integrated into the Stealthburner carriage (50:10 gear ratio) |
+| [Titanium Gantry Backers](https://mods.vorondesign.com/) | Titanium extrusion backers on the X/Y gantry rails to counteract thermal expansion and maintain gantry geometry at elevated chamber temps |
+| [GE5C Z Joint Bearings](https://mods.vorondesign.com/details/eB5T2RNQcYI4o6cilhpXEg) | Spherical GE5C bearings at the gantry Z joints (by hartk1213) — eliminates binding and improves QGL repeatability |
+
+### Bed & Chamber
+
+| Mod | Description |
+|---|---|
+| [Bed Fans](https://mods.vorondesign.com/details/28xgztUufAtAfV4XUL5l4w) | Bed-mounted fans (by Ellis) for active chamber heating — circulate hot air from the bed heater to reach chamber temp faster |
+| [Nozzle Brush & Purge Bucket](https://github.com/VoronDesign/VoronUsers/tree/master/printer_mods/edwardyeeks/Decontaminator_Purge_Bucket_%26_Nozzle_Scrubber) | Purge bucket and silicone brush for nozzle cleaning before probing and printing |
+| Exhaust Delete | Blanks the rear exhaust port to retain chamber heat |
+
+### Panels & Access
+
+| Mod | Description |
+|---|---|
+| [Removable Doors](https://mods.vorondesign.com/details/WqhhKrXksAZ4omhHS1RY4Q) | Tool-free magnetic removable front doors (by ElPoPo) |
+| [Removable Panels](https://www.printables.com/model/702768-kit-for-removable-panelsdoors-for-voron-v2trident-) | Full kit for tool-free removable side and top panels (by VictorMateusO) |
+| [Deck Panel Support Clips](https://mods.vorondesign.com/details/aBGbXOxS452m5bKCS7hWlw) | Reinforcement clips for the deck panel (by wile-e1) — prevents flex and rattle |
+| [Hidden Cable Routing Z Belt Covers](https://mods.vorondesign.com/details/LzEFU0RDHXUarF7y69x2Q) | Replaces stock Z belt covers with versions that integrate cable routing channels (by Akio) |
+| 2020 Profile Covers | Snap-on covers for exposed aluminium extrusion ends — cosmetic and safety |
+
+### Electronics & Sensing
+
+| Mod | Description |
+|---|---|
+| [BTT EBB36 CAN Toolboard](https://github.com/bigtreetech/EBB) | CAN bus toolhead board — reduces umbilical wiring to a single 4-wire cable carrying power and CAN data |
+| Internal ESP8266 (WLED) | ESP8266 running WLED firmware for addressable LED control — 8 print-status presets (idle, heating, printing, homing, etc.) |
+| [Top-Mounted LED Corner Strips](https://github.com/LeeJMorel/voron-mods) | WS2812B+ LED strip corners mounted at the top of the frame interior (custom mod) |
+| [4.3" Waveshare DSI Touchscreen](https://www.waveshare.com/4.3inch-dsi-lcd.htm) | DSI-connected touchscreen displaying KlipperScreen — mounted on the rear of the printer |
+| Internal Logitech C920 Webcam | Top-mounted USB webcam for print monitoring and timelapse |
+| Internal Arducam IMX179 Webcam | Rear-mounted 8MP USB webcam (port 8081) for a second monitoring angle |
+| Rear Filament Runout Sensor | Switch-based filament sensor — triggers M600 filament change on runout |
+
+---
 
 ## Automated Backup
 
 Configs are committed to this repo automatically via two triggers:
-- **On every Klipper startup** (1-second delayed gcode)
+- **On every Klipper startup** (1-second delayed gcode macro)
 - **Nightly cron job** (midnight)
 
-Commits include Klipper, Moonraker, and Fluidd version strings.
+Commits include Klipper, Moonraker, and Fluidd version strings in the commit message.
+
+---
 
 ## Disaster Recovery
 
 See **[DISASTER_RECOVERY.md](DISASTER_RECOVERY.md)** for complete rebuild instructions including OS setup, CAN bus configuration, MCU firmware build settings, and all known gotchas.
-
-## Key Gotchas
-
-- **TRSYNC_TIMEOUT:** CAN bus requires `TRSYNC_TIMEOUT = 0.05` in `~/klipper/klippy/mcu.py` (default 0.025). **Overwritten on every Klipper update.**
-- **Octopus 12 MHz crystal:** Must select 12 MHz (not default 8 MHz) in `make menuconfig` for the Octopus MCU.
-- **gcode_shell_command:** Third-party extension, not in stock Klipper. Must reinstall after fresh Klipper clone.
-- **Filament sensor:** Disabled on boot, enabled in PRINT_START. Don't forget this in custom start macros.
-- **Bed heater max power:** Capped at 60% (`max_power: 0.6`).
