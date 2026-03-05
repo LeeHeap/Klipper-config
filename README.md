@@ -93,7 +93,7 @@ This specific build is **serial number V2.3902**, built and maintained by Lee. I
 |---|---|
 | [Bed Fans](https://mods.vorondesign.com/details/28xgztUufAtAfV4XUL5l4w) | Bed-mounted fans (by Ellis) for active chamber heating — circulate hot air from the bed heater to reach chamber temp faster |
 | [Nozzle Brush & Purge Bucket](https://github.com/VoronDesign/VoronUsers/tree/master/printer_mods/edwardyeeks/Decontaminator_Purge_Bucket_%26_Nozzle_Scrubber) | Purge bucket and silicone brush for nozzle cleaning before probing and printing |
-| Exhaust Delete | Blanks the rear exhaust port to retain chamber heat |
+| [Exhaust Cover](https://github.com/LeeHeap/Voron-V2.4-Mods/tree/main/Exhaust%20Cover) | Replaces the stock exhaust housing with a clean blanking plate including a threaded insert for a bowden tube passthrough — retains chamber heat while allowing rear filament routing (custom mod) |
 
 ### Panels & Access
 
@@ -111,7 +111,8 @@ This specific build is **serial number V2.3902**, built and maintained by Lee. I
 |---|---|
 | [BTT EBB36 CAN Toolboard](https://github.com/bigtreetech/EBB) | CAN bus toolhead board — reduces umbilical wiring to a single 4-wire cable carrying power and CAN data |
 | Internal ESP8266 (WLED) | ESP8266 running WLED firmware for addressable LED control — 8 print-status presets (idle, heating, printing, homing, etc.) |
-| [Top-Mounted LED Corner Strips](https://github.com/LeeJMorel/voron-mods) | WS2812B+ LED strip corners mounted at the top of the frame interior (custom mod) |
+| [Top-Mounted LED Corner Strips](https://github.com/LeeHeap/Voron-V2.4-Mods/tree/main/LED%20Corners) | Redesigned 15.5mm quarter-round corner mounts for WS2812B+ LED strips — adds optional Voron logo insert, cable passthrough from top to vertical extrusion, and R2 idler compatibility (custom mod) |
+| [Skirt Buttons](https://github.com/LeeHeap/Voron-V2.4-Mods/tree/main/Skirt%20Buttons) | Microswitch button enclosures that mount in the Voron skirt — snap-fit, no extra hardware, used for Klipper macro triggers and lighting control (custom mod) |
 | [4.3" Waveshare DSI Touchscreen](https://www.waveshare.com/4.3inch-dsi-lcd.htm) | DSI-connected touchscreen displaying KlipperScreen — mounted on the rear of the printer |
 | Internal Logitech C920 Webcam | Top-mounted USB webcam for print monitoring and timelapse |
 | Internal Arducam IMX179 Webcam | Rear-mounted 8MP USB webcam (port 8081) for a second monitoring angle |
