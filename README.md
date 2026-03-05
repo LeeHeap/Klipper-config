@@ -42,39 +42,6 @@ This specific build is **serial number V2.3902**, built and maintained by Lee. I
 
 ---
 
-## Repository Structure
-
-```
-├── printer.cfg                 # Main config — MCUs, steppers, heaters, probe, fans, sensors
-├── moonraker.conf              # Moonraker API, update manager, WLED, timelapse
-├── crowsnest.conf              # Webcam configuration
-├── KlipperScreen.conf          # Touchscreen UI, preheat presets, custom menus
-├── timelapse.cfg → (symlink)   # Timelapse macros
-├── github-backup.sh            # Automated git commit & push script
-├── common/                     # Reusable macros
-│   ├── calibrate_pa.cfg        # Pressure advance calibration print
-│   ├── cancel_print.cfg        # Cancel override
-│   ├── github_backup.cfg       # Shell command for backup macro
-│   ├── m600.cfg                # Filament change (M600 → PAUSE)
-│   ├── pause.cfg               # Pause with z-hop and park
-│   ├── print_end.cfg           # End routine (retract, park, timelapse frame)
-│   ├── resume.cfg              # Resume with prime
-│   └── startup.cfg             # Boot: auto-backup config, LEDs off
-└── voron/                      # Voron-specific macros
-    ├── bedfans.cfg             # Automatic bed fan control (slow/fast by temp)
-    ├── filament_sensor.cfg     # Disable sensor on boot (enabled in PRINT_START)
-    ├── g32.cfg                 # Home + QGL + Home + Centre
-    ├── idle_timeout.cfg        # 30 min → SLEEP
-    ├── nozzle_scrub.cfg        # Purge bucket & brush macro (350mm)
-    ├── print_start.cfg         # Full start sequence
-    ├── smarthome.cfg           # HOME_IF_NEEDED conditional homing
-    ├── speed_test.cfg          # Diagonal speed test
-    ├── stealthburner_leds.cfg  # SB LED status macros
-    └── wled_lights.cfg         # WLED case light control
-```
-
----
-
 ## Hardware Mods
 
 ### Toolhead & Motion
@@ -127,6 +94,39 @@ Configs are committed to this repo automatically via two triggers:
 - **Nightly cron job** (midnight)
 
 Commits include Klipper, Moonraker, and Fluidd version strings in the commit message.
+
+---
+
+## Repository Structure
+
+```
+├── printer.cfg                 # Main config — MCUs, steppers, heaters, probe, fans, sensors
+├── moonraker.conf              # Moonraker API, update manager, WLED, timelapse
+├── crowsnest.conf              # Webcam configuration
+├── KlipperScreen.conf          # Touchscreen UI, preheat presets, custom menus
+├── timelapse.cfg → (symlink)   # Timelapse macros
+├── github-backup.sh            # Automated git commit & push script
+├── common/                     # Reusable macros
+│   ├── calibrate_pa.cfg        # Pressure advance calibration print
+│   ├── cancel_print.cfg        # Cancel override
+│   ├── github_backup.cfg       # Shell command for backup macro
+│   ├── m600.cfg                # Filament change (M600 → PAUSE)
+│   ├── pause.cfg               # Pause with z-hop and park
+│   ├── print_end.cfg           # End routine (retract, park, timelapse frame)
+│   ├── resume.cfg              # Resume with prime
+│   └── startup.cfg             # Boot: auto-backup config, LEDs off
+└── voron/                      # Voron-specific macros
+    ├── bedfans.cfg             # Automatic bed fan control (slow/fast by temp)
+    ├── filament_sensor.cfg     # Disable sensor on boot (enabled in PRINT_START)
+    ├── g32.cfg                 # Home + QGL + Home + Centre
+    ├── idle_timeout.cfg        # 30 min → SLEEP
+    ├── nozzle_scrub.cfg        # Purge bucket & brush macro (350mm)
+    ├── print_start.cfg         # Full start sequence
+    ├── smarthome.cfg           # HOME_IF_NEEDED conditional homing
+    ├── speed_test.cfg          # Diagonal speed test
+    ├── stealthburner_leds.cfg  # SB LED status macros
+    └── wled_lights.cfg         # WLED case light control
+```
 
 ---
 
