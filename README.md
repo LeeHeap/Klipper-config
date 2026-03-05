@@ -105,7 +105,8 @@ Commits include Klipper, Moonraker, and Fluidd version strings in the commit mes
 ├── crowsnest.conf              # Webcam configuration
 ├── KlipperScreen.conf          # Touchscreen UI, preheat presets, custom menus
 ├── timelapse.cfg → (symlink)   # Timelapse macros
-├── github-backup.sh            # Automated git commit & push script
+├── scripts/
+│   └── github-backup.sh        # Automated git commit & push script
 ├── common/                     # Reusable macros
 │   ├── calibrate_pa.cfg        # Pressure advance calibration print
 │   ├── cancel_print.cfg        # Cancel override

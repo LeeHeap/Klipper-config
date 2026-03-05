@@ -305,7 +305,6 @@ printer_data/config/
 ├── crowsnest.conf           # Webcam streaming config
 ├── KlipperScreen.conf       # Touchscreen UI config
 ├── timelapse.cfg → ~/moonraker-timelapse/klipper_macro/timelapse.cfg  (symlink)
-├── github-backup.sh         # Automated git backup script
 ├── .gitignore               # Ignores *.bkp files
 ├── common/                  # Reusable macros (not printer-specific)
 │   ├── calibrate_pa.cfg     # Pressure advance calibration print macro
@@ -597,12 +596,12 @@ Test macros (`TEST_WLED_IDLE`, `TEST_WLED_HEATING`, etc.) are available in Fluid
 The backup system uses two components:
 
 1. **Gcode macro** (`common/github_backup.cfg`): Defines a `gcode_shell_command` named `github_backup` and a `BACKUP_CONFIG` macro.
-2. **Shell script** (`github-backup.sh`): The actual Git operations.
+2. **Shell script** (`scripts/github-backup.sh`): The actual Git operations.
 
 ### Backup Triggers
 
 - **On Klipper startup:** Via delayed gcode in `common/startup.cfg` (runs 1 second after boot)
-- **Nightly cron job:** Root crontab runs `github-backup.sh` at midnight (`0 0 * * *`)
+- **Nightly cron job:** Root crontab runs `scripts/github-backup.sh` at midnight (`0 0 * * *`)
 
 ### What It Does
 
@@ -834,7 +833,7 @@ make clean && make
 ```bash
 sudo crontab -e
 # Add:
-0 0 * * * sh ~/printer_data/config/github-backup.sh
+0 0 * * * /bin/bash ~/printer_data/config/scripts/github-backup.sh
 ```
 
 #### Phase 11: Node.js (if needed)
