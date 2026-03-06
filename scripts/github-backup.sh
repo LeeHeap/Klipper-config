@@ -44,17 +44,24 @@ push_config() {
     git pull --rebase --autostash || { echo "ERROR: git pull failed"; exit 1; }
   fi
 
-  # Check if there are actually changes to commit
+  # Commit any uncommitted changes
   if git diff --quiet && git diff --staged --quiet; then
-    echo "No config changes to backup"
-    exit 0
+    echo "No new config changes"
+  else
+    git add -A
+    local version_info
+    version_info=$(grab_version)
+    git commit -m "Autocommit $(date +'%Y-%m-%d %H:%M')" -m "${version_info}"
   fi
 
-  git add -A
-  local version_info
-  version_info=$(grab_version)
-  git commit -m "Autocommit $(date +'%Y-%m-%d %H:%M')" -m "${version_info}"
-  git push || echo "WARNING: git push failed — will retry next run"
+  # Always push if there are unpushed commits
+  local AHEAD
+  AHEAD=$(git rev-list @{u}..HEAD --count 2>/dev/null || echo "0")
+  if [[ "${AHEAD}" -gt 0 ]]; then
+    git push || echo "WARNING: git push failed — will retry next run"
+  else
+    echo "Nothing to push"
+  fi
 }
 
 push_config
