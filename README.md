@@ -97,6 +97,14 @@ Commits include Klipper, Moonraker, and Fluidd version strings in the commit mes
 
 ---
 
+## Known Issues
+
+### Z_OFFSET_APPLY_PROBE is broken with Voron Tap
+
+Klipper's built-in `Z_OFFSET_APPLY_PROBE` applies baby-step adjustments with the **wrong sign** when used with Voron Tap. Use the custom `SAVE_Z_OFFSET` macro instead. See [Z_OFFSET_TAP_BUG.md](Z_OFFSET_TAP_BUG.md) for full explanation and correct workflow.
+
+---
+
 ## Repository Structure
 
 ```
