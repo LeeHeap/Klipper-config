@@ -37,7 +37,7 @@ push_config() {
   cd "${config_folder}" || { echo "ERROR: Config folder not found"; exit 1; }
 
   # Only pull if remote has changes (avoids unnecessary merge commits)
-  git fetch origin 2>/dev/null
+  git fetch origin 2>/dev/null || true
   local LOCAL=$(git rev-parse HEAD)
   local REMOTE=$(git rev-parse @{u} 2>/dev/null || echo "${LOCAL}")
   if [[ "${LOCAL}" != "${REMOTE}" ]]; then
