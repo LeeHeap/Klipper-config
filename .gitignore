@@ -1,3 +1,10 @@
+*.bak
 *.bkp
 *.backup.*
+*.orig
+*.tmp
+*.swp
 printer-*_*.cfg
+__pycache__/
+*.pyc
+.DS_Store

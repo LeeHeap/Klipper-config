@@ -20,7 +20,9 @@ This specific build is **serial number V2.3902**, built and maintained by Lee. I
 | Mainboard | BTT Octopus (STM32F446) via USB |
 | Toolhead Board | BTT EBB36 (STM32G0B1) via CAN bus at 1 Mbps |
 | Extruder | Clockwork 2 (50:10 gear ratio) |
-| Probe | Voron TAP (nozzle contact) |
+| Hotend | Dragon V6 (high-flow, all-metal) |
+| Build Plate | LDO DarkRock 355mm textured PEI flex plate |
+| Probe | Chaoticlabs CNC Tap V2 (nozzle contact, magnetic flexure) |
 | Accelerometer | ADXL345 on EBB36 |
 | Touchscreen | 4.3" Waveshare DSI LCD (KlipperScreen) |
 
@@ -48,7 +50,7 @@ This specific build is **serial number V2.3902**, built and maintained by Lee. I
 
 | Mod | Description |
 |---|---|
-| [Voron TAP](https://github.com/VoronDesign/Voron-Tap) | Nozzle-contact probing — the nozzle itself is the probe, eliminating Z offset drift |
+| [Chaoticlabs CNC Tap V2](https://github.com/chaoticlabs/CNC_Tap) | Nozzle-contact probing with a magnetic flexure (more durable than Voron Tap's printed flexure) — the nozzle itself is the probe. Z offset behaviour matches Voron Tap: `Z_OFFSET_APPLY_PROBE` is broken, see known bugs below |
 | [Stealthburner](https://github.com/VoronDesign/Voron-Stealthburner) | Replacement printhead with integrated RGBW LED status lighting and improved part cooling |
 | [Clockwork 2](https://github.com/VoronDesign/Voron-Stealthburner) | Direct-drive extruder integrated into the Stealthburner carriage (50:10 gear ratio) |
 | [Titanium Gantry Backers](https://mods.vorondesign.com/) | Titanium extrusion backers on the X/Y gantry rails to counteract thermal expansion and maintain gantry geometry at elevated chamber temps |
@@ -90,18 +92,20 @@ This specific build is **serial number V2.3902**, built and maintained by Lee. I
 ## Automated Backup
 
 Configs are committed to this repo automatically via two triggers:
-- **On every Klipper startup** (1-second delayed gcode macro)
-- **Nightly cron job** (midnight)
+- **On every Klipper startup** (1-second delayed gcode in `common/startup.cfg`)
+- **Nightly cron job** at 00:00 in lee's crontab (not root's)
 
-Commits include Klipper, Moonraker, and Fluidd version strings in the commit message.
+Commits include Klipper, Moonraker, and Fluidd version strings in the commit message. The script at `scripts/github-backup.sh` uses absolute paths only, exports `HOME=/home/lee` explicitly, and writes a status summary to `/tmp/github-backup-status` after each run.
+
+If pushes start failing silently, the first thing to check is ownership of `/home/lee/.git-credentials`: it must be `lee:lee` with mode `0600`. If an earlier root-as-lee `git push` touched it, ownership flips to root and every subsequent push fails with "could not read Username for 'https://github.com'".
 
 ---
 
 ## Known Issues
 
-### Z_OFFSET_APPLY_PROBE is broken with Voron Tap
+### Z_OFFSET_APPLY_PROBE is broken with Tap-style probes (Voron Tap and CNC Tap)
 
-Klipper's built-in `Z_OFFSET_APPLY_PROBE` applies baby-step adjustments with the **wrong sign** when used with Voron Tap. Use the custom `SAVE_Z_OFFSET` macro instead. See [Z_OFFSET_TAP_BUG.md](Z_OFFSET_TAP_BUG.md) for full explanation and correct workflow.
+Klipper's built-in `Z_OFFSET_APPLY_PROBE` applies baby-step adjustments with the **wrong sign** when the nozzle itself is the probe (Voron Tap, CNC Tap, or any similar nozzle-contact design). Use the custom `SAVE_Z_OFFSET` macro instead. See [Z_OFFSET_TAP_BUG.md](Z_OFFSET_TAP_BUG.md) for full explanation and correct workflow.
 
 ---
 
@@ -115,22 +119,27 @@ Klipper's built-in `Z_OFFSET_APPLY_PROBE` applies baby-step adjustments with the
 ├── timelapse.cfg → (symlink)   # Timelapse macros
 ├── scripts/
 │   └── github-backup.sh        # Automated git commit & push script
-├── common/                     # Reusable macros
+├── common/                     # Reusable macros (auto-included via printer.cfg wildcard)
 │   ├── calibrate_pa.cfg        # Pressure advance calibration print
-│   ├── cancel_print.cfg        # Cancel override
-│   ├── github_backup.cfg       # Shell command for backup macro
-│   ├── m600.cfg                # Filament change (M600 → PAUSE)
+│   ├── cancel_print.cfg        # Cancel override (keeps bed hot for quick restart)
+│   ├── filament_change.cfg     # Filament change workflow helper
+│   ├── github_backup.cfg       # gcode_shell_command wrapper + BACKUP_CONFIG macro
+│   ├── m600.cfg                # Filament change (M600 triggers PAUSE)
 │   ├── pause.cfg               # Pause with z-hop and park
 │   ├── print_end.cfg           # End routine (retract, park, timelapse frame)
 │   ├── resume.cfg              # Resume with prime
-│   └── startup.cfg             # Boot: auto-backup config, LEDs off
-└── voron/                      # Voron-specific macros
-    ├── bedfans.cfg             # Automatic bed fan control (slow/fast by temp)
+│   ├── save_z_offset.cfg       # Tap-safe SAVE_Z_OFFSET (see Known Issues)
+│   ├── startup.cfg             # Boot: delayed backup trigger, LEDs off
+│   └── virtual_tools.cfg       # T0-T9 virtual extruders for multi-colour printing
+└── voron/                      # Voron-specific macros and hardware configs
+    ├── bedfans.cfg             # Automatic bed fan control (off during print to prevent ABS warp)
+    ├── c920.cfg                # Logitech C920 webcam-specific settings
     ├── filament_sensor.cfg     # Disable sensor on boot (enabled in PRINT_START)
     ├── g32.cfg                 # Home + QGL + Home + Centre
-    ├── idle_timeout.cfg        # 30 min → SLEEP
+    ├── idle_timeout.cfg        # 30 min -> SLEEP
     ├── nozzle_scrub.cfg        # Purge bucket & brush macro (350mm)
-    ├── print_start.cfg         # Full start sequence
+    ├── print_monitor.cfg       # AI print monitoring hooks (Claude LXC integration)
+    ├── print_start.cfg         # Full start sequence (conditional QGL, adaptive mesh)
     ├── smarthome.cfg           # HOME_IF_NEEDED conditional homing
     ├── speed_test.cfg          # Diagonal speed test
     ├── stealthburner_leds.cfg  # SB LED status macros
